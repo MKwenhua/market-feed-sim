@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>成龍大哥</title>
+<style>
+
+ul#feeds{
+	display: inline-block;
+	list-style: none;
+	padding:0;
+	margin: 0;
+	width:400px;
+}
+ul#feeds li{
+	padding: 6px;
+	font-size: 15px;
+	font-weight: 600;
+	cursor: pointer;
+	border: 1px solid silver;
+	border-radius: 2px;
+}
+ul#feeds li:hover{
+	background: #1E90FF;
+	color: white;
+}
+#centerPage{
+	text-align: center;
+}
+#centerPage > h1{
+	text-align: center;
+}
+</style>
+</head>
+
+<body>
+<div id="centerPage">
+	<h1>成龍作為香港的英雄<h1>
+	<ul id="feeds">
+	</ul>
+	</div>
+</body>
+<script >
+
+window.onload = function(){
+var symbols =	["AUD/JPY",
+  "AUD/USD",
+  "CAD/CHF",
+  "CAD/JPY",
+  "CHF/JPY",
+  "EUR/AUD",
+  "EUR/CAD",
+  "EUR/GBP",
+  "EUR/JPY",
+  "EUR/NOK",
+  "EUR/SEK",
+  "EUR/USD",
+  "GBP/CHF",
+  "GBP/JPY",
+  "GBP/USD",
+  "NZD/JPY",
+  "NZD/USD",
+  "USD/BRL",
+  "USD/CAD",
+  "USD/CHF",
+  "USD/CNY",
+  "USD/CZK",
+  "USD/HKD",
+  "USD/INR",
+  "USD/JPY",
+  "USD/KRW",
+  "USD/MXN",
+  "USD/NOK",
+  "USD/PLN",
+  "USD/RUB",
+  "USD/SEK",
+  "USD/SGD",
+  "USD/ZAR"]
+var feeds = document.getElementById('feeds');
+feeds.innerHTML = symbols.map(function(itm){
+	return ['<li data-what="',itm,'">', itm, '</li>'].join('')
+}).join('');
+var ws = new WebSocket("ws://localhost:5050/v1/ws");
+ws.onopen = function (event) {
+ 
+};
+feeds.onclick = function(e) {
+	var symbol = e.target.dataset.what;
+	if(symbol){
+	   console.log(symbol);
+	   ws.send(symbol);
+	}
+}
+ws.onmessage = function (event) {
+  console.log(JSON.parse(event.data));
+}
+
+
+}
+
+</script>
+</html>

@@ -6,34 +6,26 @@ import (
 	"os"
 	"runtime"
 	"time"
-	"symbolsock"
-	"github.com/garyburd/redigo/redis"
+	"ticksimulator"
 	"github.com/gorilla/websocket"
 )
-const upgrader = websocket.Upgrader{}
+var upgrader = websocket.Upgrader{}
 
 
-
+ 
 func main() {
-	http.HandleFunc("/", chillin)
+	http.HandleFunc("/", hello)
 	
-	c, err := redis.Dial("tcp", ":6379")
-	if err != nil {
-	panic(err)
+	onOpenShift := false
+    if ( onOpenShift) {
+		bind := fmt.Sprintf("%s:%s", os.Getenv("OPENSHIFT_GO_IP"), os.Getenv("OPENSHIFT_GO_PORT"))
+		fmt.Printf("listening on %s...", bind)
+		err := http.ListenAndServe(bind, nil)
+		if err != nil {
+			panic(err)
+		}
 	}
-	defer c.Close()
-		
-	theData, err := redis.String(c.Do("GET", "eur_usd_m1"))
-	if err != nil {
-	  println("key not found")
-	}
-
-	seriesSockets := symbolsock.SymbolStream(theData)
-	seriesSockets.newStream("APPL")
-	for i:= 0; i < 6; i++{
-		println(seriesSockets.getSeriesPoint("APPL"))
-	}
-    
+	
 		
 
 
@@ -45,26 +37,33 @@ func main() {
 		
 		go func(conn *websocket.Conn) { 
 			for {
-				_, _, err := conn.ReadMessage()
+				_, msg, err := conn.ReadMessage()
 				if err != nil {
 					conn.Close()
 				}
+				str :=  string(msg[:])
+				println(string(str))
+				symbolStream(conn, str)
+				
 			}
 
 		}(conn)
-		go func(conn *websocket.Conn) {
-			ch := time.Tick(1 *time.Second)
-			for range ch {
-				
-			 	conn.WriteJSON({yo: "hey"})
-			}
-		}(conn)
+	
     })
 	http.ListenAndServe(":5050",nil)
 	
 		
 }
-
-func chillin(res http.ResponseWriter, req *http.Request) {
-	fmt.Fprintf(res, "mirco service, chillin. Running version %s", runtime.Version())
+func symbolStream(conn *websocket.Conn, symb string){
+	seriesPush := ticksimulator.GetTickStruct(symb)
+	
+	ch := time.Tick(1 *time.Second)
+		for range ch {
+			update := seriesPush.GetPoint()
+		 	conn.WriteJSON(update)
+	}
+	
+}
+func hello(res http.ResponseWriter, req *http.Request) {
+	fmt.Fprintf(res, "hello, world from %s", runtime.Version())
 }
