@@ -4,45 +4,206 @@
 <title>成龍大哥</title>
 <style>
 
-ul#feeds{
-	display: inline-block;
-	list-style: none;
-	padding:0;
-	margin: 0;
-	width:400px;
+ul.feeds{
+  display: inline-block;
+  list-style: none;
+  padding:0;
+  margin: 0;
+  width:100%;
 }
-ul#feeds li{
-	padding: 6px;
-	font-size: 15px;
-	font-weight: 600;
-	cursor: pointer;
-	border: 1px solid silver;
-	border-radius: 2px;
+ul.feeds li{
+  padding: 6px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid silver;
+  border-radius: 2px;
 }
-ul#feeds li:hover{
-	background: #1E90FF;
-	color: white;
+ul.feeds li:hover{
+  background: #1E90FF;
+  color: white;
 }
 #centerPage{
-	text-align: center;
+  text-align: center;
 }
 #centerPage > h1{
-	text-align: center;
+  text-align: center;
+}
+.list-spread {
+  display: inline-block;
+  width: 30%;
+  vertical-align: top;
 }
 </style>
 </head>
 
 <body>
 <div id="centerPage">
-	<h1>成龍作為香港的英雄<h1>
-	<ul id="feeds">
-	</ul>
-	</div>
+  <h1>成龍作為香港的英雄<h1>
+  <div class="list-spread">
+   <strong>EXCHANGE</strong>
+  <ul id="money" class="feeds">
+  </ul>
+  </div>
+  <div class="list-spread">
+    <strong>NASDAQ</strong>
+  <ul id="nas" class="feeds">
+  </ul>
+  </div>
+  <div class="list-spread">
+  <strong>NYSE</strong>
+  <ul id="nyc" class="feeds">
+  </ul>
+  </div>
+  </div>
 </body>
 <script >
 
 window.onload = function(){
-var symbols =	["AUD/JPY",
+var nasdaq = [ 'OILD',
+  'AEIS',
+  'AMD',
+  'ALGN',
+  'APEI',
+  'ASML',
+  'ASTE',
+  'ALOT',
+  'ATRI',
+  'ADRE',
+  'BMCH',
+  'BRKS',
+  'CA',
+  'CPLA',
+  'CARO',
+  'CASY',
+  'CBNK',
+  'CSCO',
+  'CVLT',
+  'CYBE',
+  'CYNO',
+  'CYRN',
+  'DLTR',
+  'DORM',
+  'EBAY',
+  'FNTCW',
+  'FFBC',
+  'THFF',
+  'SKYY',
+  'FEX',
+  'FTC',
+  'FTA',
+  'FAB',
+  'TDIV',
+  'QTEC',
+  'FYX',
+  'FIVE',
+  'FELE',
+  'GRMN',
+  'GENC',
+  'GNTX',
+  'SOCL',
+  'GDEN',
+  'GBDC',
+  'IESC',
+  'IPAR',
+  'SOXX',
+  'JKHY',
+  'JSMD',
+  'KEQU',
+  'KLAC',
+  'LKFN',
+  'LRCX',
+  'LXRX',
+  'LGIH',
+  'LSXMB',
+  'LSXMA',
+  'LLTC',
+  'LITE',
+  'MGIC',
+  'MBFI',
+  'MGPI',
+  'MCHP',
+  'MKSI',
+  'MPWR',
+  'NANO',
+  'NGHCZ',
+  'NATL',
+  'NTES',
+  'NVEE',
+  'NVDA',
+  'OCLR',
+  'ORLY',
+  'PDFS',
+  'PEBO',
+  'PEBK',
+  'PRFT',
+  'POWI',
+  'PSCI',
+  'PSCT',
+  'PSEC',
+  'PROV',
+  'QCRH',
+  'RAVN',
+  'ROST',
+  'SMTC',
+  'SIRI',
+  'JSM',
+  'OKSB',
+  'SPAR',
+  'TXN',
+  'SPNC',
+  'UBNT',
+  'UFPI',
+  'VTWV',
+  'VASC',
+  'CFO',
+  'CFA',
+  'CDL',
+  'FLAG' ];
+var nyse = [ 'ACM',
+  'AKS',
+  'AMBR',
+  'ARMK',
+  'BANC',
+  'BSBR',
+  'BAX',
+  'BHL',
+  'BERY',
+  'LND',
+  'BR',
+  'CAT',
+  'IGR',
+  'CIM',
+  'MJN',
+  'MSCI',
+  'MUSA',
+  'NCI',
+  'NXRT',
+  'NTC',
+  'NEV',
+  'PCI',
+  'PHK',
+  'RCS',
+  'PPX',
+  'PLD',
+  'PRH',
+  'TLK',
+  'PSA',
+  'CTY',
+  'CTAA',
+  'RFT',
+  'SAP',
+  'AOS',
+  'SWK',
+  'EDF',
+  'SRI',
+  'BLD',
+  'TTC',
+  'TDG',
+  'UTX',
+  'WCN',
+  'WFC' ];
+var currencies =  ["AUD/JPY",
   "AUD/USD",
   "CAD/CHF",
   "CAD/JPY",
@@ -75,22 +236,33 @@ var symbols =	["AUD/JPY",
   "USD/SEK",
   "USD/SGD",
   "USD/ZAR"]
-var feeds = document.getElementById('feeds');
-feeds.innerHTML = symbols.map(function(itm){
-	return ['<li data-what="',itm,'">', itm, '</li>'].join('')
+
+var money = document.getElementById('money').innerHTML = currencies.map(function(itm){
+  return ['<li data-what="',itm,'">', itm, '</li>'].join('')
 }).join('');
-var ws = new WebSocket("ws://localhost:5050/v1/ws");
+var nas = document.getElementById('nas').innerHTML = nasdaq.map(function(itm){
+  return ['<li data-what="',itm,'">', itm, '</li>'].join('')
+}).join('');
+document.getElementById('nyc').innerHTML = nyse.map(function(itm){
+  return ['<li data-what="',itm,'">', itm, '</li>'].join('')
+}).join('');
+if (window.location.protocol != "https:"){
+var ws = new WebSocket("ws://"+location.hostname+":{{.port}}/ws");
+}else{
+  var ws = new WebSocket("wss://"+location.hostname+"/ws");
+} 
 ws.onopen = function (event) {
  
 };
-feeds.onclick = function(e) {
-	var symbol = e.target.dataset.what;
-	if(symbol){
-	   console.log(symbol);
-	   ws.send(symbol);
-	}
+document.getElementById('centerPage').onclick = function(e) {
+  var symbol = e.target.dataset.what;
+  if(symbol){
+     console.log(symbol);
+     ws.send(symbol);
+  }
 }
 ws.onmessage = function (event) {
+
   console.log(JSON.parse(event.data));
 }
 
