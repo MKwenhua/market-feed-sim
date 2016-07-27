@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"time"
 	"math/rand"
-    "websocket"
+	"websocket"
 )
 var upgrader = websocket.Upgrader{
 	CheckOrigin: func(r *http.Request) bool { return true },
@@ -376,14 +376,14 @@ func main() {
 		go w.start()
 	}
 	http.HandleFunc("/", hello)
-	
+
 	http.HandleFunc("/indi", func(w http.ResponseWriter, r *http.Request){
 		http.ServeFile(w, r, "index.html")
-    })
+	})
 	http.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request){
 		wsPage(w, r)
-	
-    })
+
+	})
 	http.ListenAndServe(":8443",nil)
 	
 		
