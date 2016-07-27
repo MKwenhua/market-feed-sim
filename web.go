@@ -11,8 +11,8 @@ import (
 )
 var upgrader = websocket.Upgrader{
 	CheckOrigin: func(r *http.Request) bool { return true },
-    ReadBufferSize:  1024,
-    WriteBufferSize: 1024,
+	ReadBufferSize:  1024,
+	WriteBufferSize: 1024,
 }
 type OHLC [4]float32
 
@@ -68,32 +68,6 @@ func (sb *SymbolPush) start() {
 	}
 	
 }
-func (sb *SymbolPush) GetLoopy() {
-	ch := time.Tick(1 *time.Second)
-		for range ch {
-			update := sb.GetPoint()
-		 	
-		 	for conn := range sb.sockets {		
-				conn.send <- update
-			}
-			
-	}
-}
-// each time a client subscribes to a feed, clients is incremented
-func (s *SymbolPush) increment() int {
-	s.clients++
-	fmt.Println(s.feed, " has ", s.clients, " listening")
-	return s.clients
-}
-
-
-
-// each time a client subscribes to a feed, clients is decremented, if zero it will be deleted
-func (s *SymbolPush) decrement() int {
-	s.clients--
-	fmt.Println(s.feed, " has ", s.clients, " listening")
-	return s.clients
-}
 
 //caluclates a fake Tick Point using the last price and a range between the yearly Highest and Lowest
 func getOHLCpoint(sym string, open float32, highest float32, lowest float32) OHLC {
@@ -126,39 +100,39 @@ func (s *SymbolPush) GetPoint() SeriesPoint {
 
 
 var SymStreams = map[string]SymbolPush{  
-	  "AUD/JPY": { "AUD/JPY", "AUD/JPY_feed", 0, 79.013, 87.815, 72.354, make(map[*Client]bool), make(chan *Client), make(chan *Client) },
-	  "AUD/USD": { "AUD/USD", "AUD/USD_feed", 0, 0.74521, 0.78337, 0.68265 , make(map[*Client]bool), make(chan *Client), make(chan *Client)},
-	  "CAD/CHF": { "CAD/CHF", "CAD/CHF_feed", 0, 0.7514, 0.7735, 0.6803, make(map[*Client]bool), make(chan *Client), make(chan *Client) },
-	  "CAD/JPY": { "CAD/JPY", "CAD/JPY_feed", 0, 80.757, 88.796, 76.071, make(map[*Client]bool), make(chan *Client), make(chan *Client) },
-	  "CHF/JPY": { "CHF/JPY", "CHF/JPY_feed", 0, 107.342, 120.365, 101.195, make(map[*Client]bool) , make(chan *Client), make(chan *Client)},
-	  "EUR/AUD": { "EUR/AUD", "EUR/AUD_feed", 0, 1.46873, 1.62429, 1.44335 , make(map[*Client]bool), make(chan *Client), make(chan *Client)},
-	  "EUR/CAD": { "EUR/CAD", "EUR/CAD_feed", 0, 1.44065, 1.61045, 1.41772 , make(map[*Client]bool), make(chan *Client), make(chan *Client)},
-	  "EUR/GBP": { "EUR/GBP", "EUR/GBP_feed", 0, 0.83713, 0.86255, 0.73119, make(map[*Client]bool) , make(chan *Client), make(chan *Client)},
-	  "EUR/JPY": { "EUR/JPY", "EUR/JPY_feed", 0, 116.393, 132.285, 109.552, make(map[*Client]bool) , make(chan *Client), make(chan *Client)},
-	  "EUR/NOK": { "EUR/NOK", "EUR/NOK_feed", 0, 9.37867, 9.74633, 9.15502 , make(map[*Client]bool), make(chan *Client), make(chan *Client)},
-	  "EUR/SEK": { "EUR/SEK", "EUR/SEK_feed", 0, 9.49165, 9.61074, 9.11289 , make(map[*Client]bool), make(chan *Client), make(chan *Client)},
-	  "EUR/USD": { "EUR/USD", "EUR/USD_feed", 0, 1.09758, 1.1616, 1.07102, make(map[*Client]bool), make(chan *Client), make(chan *Client) },
-	  "GBP/AUD": { "GBP/AUD", "GBP/AUD_feed", 0, 1.75303, 2.09769, 1.7043, make(map[*Client]bool), make(chan *Client), make(chan *Client) },
-	  "GBP/CHF": { "GBP/CHF", "GBP/CHF_feed", 0, 1.2927, 1.48345, 1.25059 , make(map[*Client]bool), make(chan *Client), make(chan *Client)},
-	  "GBP/JPY": { "GBP/JPY", "GBP/JPY_feed", 0, 138.921, 177.356, 128.788 , make(map[*Client]bool), make(chan *Client), make(chan *Client)},
-	  "GBP/USD": { "GBP/USD", "GBP/USD_feed", 0, 1.31064, 1.50155, 1.27975 , make(map[*Client]bool), make(chan *Client), make(chan *Client)},
-	  "NZD/JPY": { "NZD/JPY", "NZD/JPY_feed", 0, 74.079, 82.23, 68.889, make(map[*Client]bool) , make(chan *Client), make(chan *Client)},
-	  "NZD/USD": { "NZD/USD", "NZD/USD_feed", 0, 0.6988, 0.73236, 0.63463, make(map[*Client]bool) , make(chan *Client), make(chan *Client)},
-	  "USD/BRL": { "USD/BRL", "USD/BRL_feed", 0, 3.25397, 4.16152, 3.18546, make(map[*Client]bool) , make(chan *Client), make(chan *Client)},
-	  "USD/CAD": { "USD/CAD", "USD/CAD_feed", 0, 1.31252, 1.46896, 1.24602 , make(map[*Client]bool), make(chan *Client), make(chan *Client)},
-	  "USD/CHF": { "USD/CHF", "USD/CHF_feed", 0, 0.98669, 1.02558, 0.94439 , make(map[*Client]bool), make(chan *Client), make(chan *Client)},
-	  "USD/CNY": { "USD/CNY", "USD/CNY_feed", 0, 6.6758, 6.7134, 6.4108, make(map[*Client]bool) , make(chan *Client), make(chan *Client)},
-	  "USD/CZK": { "USD/CZK", "USD/CZK_feed", 0, 24.6089, 25.2263, 23.2712 , make(map[*Client]bool), make(chan *Client), make(chan *Client)},
-	  "USD/HKD": { "USD/HKD", "USD/HKD_feed", 0, 7.7566, 7.829, 7.7493, make(map[*Client]bool) , make(chan *Client), make(chan *Client)},
-	  "USD/INR": { "USD/INR", "USD/INR_feed", 0, 67.0958, 68.8808, 65.88 , make(map[*Client]bool), make(chan *Client), make(chan *Client)},
-	  "USD/JPY": { "USD/JPY", "USD/JPY_feed", 0, 106.033, 121.676, 99.075, make(map[*Client]bool) , make(chan *Client), make(chan *Client)},
-	  "USD/KRW": { "USD/KRW", "USD/KRW_feed", 0, 1134.52, 1244.1, 1122.87 , make(map[*Client]bool), make(chan *Client), make(chan *Client)},
-	  "USD/MXN": { "USD/MXN", "USD/MXN_feed", 0, 18.5388, 19.5088, 17.0489 , make(map[*Client]bool), make(chan *Client), make(chan *Client)},
-	  "USD/NOK": { "USD/NOK", "USD/NOK_feed", 0, 8.54192, 8.99242, 7.96395 , make(map[*Client]bool), make(chan *Client), make(chan *Client)},
-	  "USD/PLN": { "USD/PLN", "USD/PLN_feed", 0, 3.9742, 4.1552, 3.7043, make(map[*Client]bool), make(chan *Client), make(chan *Client) },
-	  "USD/RUB": { "USD/RUB", "USD/RUB_feed", 0, 64.745, 85.099, 62.791 , make(map[*Client]bool), make(chan *Client), make(chan *Client)},
-	  "USD/SEK": { "USD/SEK", "USD/SEK_feed", 0, 8.64657, 8.74226, 7.89232 , make(map[*Client]bool), make(chan *Client), make(chan *Client)},
-	  "USD/SGD": { "USD/SGD", "USD/SGD_feed", 0, 1.3579, 1.4443, 1.3311, make(map[*Client]bool) , make(chan *Client), make(chan *Client)},
+	"AUD/JPY": { "AUD/JPY", "AUD/JPY_feed", 0, 79.013, 87.815, 72.354, make(map[*Client]bool), make(chan *Client), make(chan *Client) },
+	"AUD/USD": { "AUD/USD", "AUD/USD_feed", 0, 0.74521, 0.78337, 0.68265 , make(map[*Client]bool), make(chan *Client), make(chan *Client)},
+	"CAD/CHF": { "CAD/CHF", "CAD/CHF_feed", 0, 0.7514, 0.7735, 0.6803, make(map[*Client]bool), make(chan *Client), make(chan *Client) },
+	"CAD/JPY": { "CAD/JPY", "CAD/JPY_feed", 0, 80.757, 88.796, 76.071, make(map[*Client]bool), make(chan *Client), make(chan *Client) },
+	"CHF/JPY": { "CHF/JPY", "CHF/JPY_feed", 0, 107.342, 120.365, 101.195, make(map[*Client]bool) , make(chan *Client), make(chan *Client)},
+	"EUR/AUD": { "EUR/AUD", "EUR/AUD_feed", 0, 1.46873, 1.62429, 1.44335 , make(map[*Client]bool), make(chan *Client), make(chan *Client)},
+	"EUR/CAD": { "EUR/CAD", "EUR/CAD_feed", 0, 1.44065, 1.61045, 1.41772 , make(map[*Client]bool), make(chan *Client), make(chan *Client)},
+	"EUR/GBP": { "EUR/GBP", "EUR/GBP_feed", 0, 0.83713, 0.86255, 0.73119, make(map[*Client]bool) , make(chan *Client), make(chan *Client)},
+	"EUR/JPY": { "EUR/JPY", "EUR/JPY_feed", 0, 116.393, 132.285, 109.552, make(map[*Client]bool) , make(chan *Client), make(chan *Client)},
+	"EUR/NOK": { "EUR/NOK", "EUR/NOK_feed", 0, 9.37867, 9.74633, 9.15502 , make(map[*Client]bool), make(chan *Client), make(chan *Client)},
+	"EUR/SEK": { "EUR/SEK", "EUR/SEK_feed", 0, 9.49165, 9.61074, 9.11289 , make(map[*Client]bool), make(chan *Client), make(chan *Client)},
+	"EUR/USD": { "EUR/USD", "EUR/USD_feed", 0, 1.09758, 1.1616, 1.07102, make(map[*Client]bool), make(chan *Client), make(chan *Client) },
+	"GBP/AUD": { "GBP/AUD", "GBP/AUD_feed", 0, 1.75303, 2.09769, 1.7043, make(map[*Client]bool), make(chan *Client), make(chan *Client) },
+	"GBP/CHF": { "GBP/CHF", "GBP/CHF_feed", 0, 1.2927, 1.48345, 1.25059 , make(map[*Client]bool), make(chan *Client), make(chan *Client)},
+	"GBP/JPY": { "GBP/JPY", "GBP/JPY_feed", 0, 138.921, 177.356, 128.788 , make(map[*Client]bool), make(chan *Client), make(chan *Client)},
+	"GBP/USD": { "GBP/USD", "GBP/USD_feed", 0, 1.31064, 1.50155, 1.27975 , make(map[*Client]bool), make(chan *Client), make(chan *Client)},
+	"NZD/JPY": { "NZD/JPY", "NZD/JPY_feed", 0, 74.079, 82.23, 68.889, make(map[*Client]bool) , make(chan *Client), make(chan *Client)},
+	"NZD/USD": { "NZD/USD", "NZD/USD_feed", 0, 0.6988, 0.73236, 0.63463, make(map[*Client]bool) , make(chan *Client), make(chan *Client)},
+	"USD/BRL": { "USD/BRL", "USD/BRL_feed", 0, 3.25397, 4.16152, 3.18546, make(map[*Client]bool) , make(chan *Client), make(chan *Client)},
+	"USD/CAD": { "USD/CAD", "USD/CAD_feed", 0, 1.31252, 1.46896, 1.24602 , make(map[*Client]bool), make(chan *Client), make(chan *Client)},
+	"USD/CHF": { "USD/CHF", "USD/CHF_feed", 0, 0.98669, 1.02558, 0.94439 , make(map[*Client]bool), make(chan *Client), make(chan *Client)},
+	"USD/CNY": { "USD/CNY", "USD/CNY_feed", 0, 6.6758, 6.7134, 6.4108, make(map[*Client]bool) , make(chan *Client), make(chan *Client)},
+	"USD/CZK": { "USD/CZK", "USD/CZK_feed", 0, 24.6089, 25.2263, 23.2712 , make(map[*Client]bool), make(chan *Client), make(chan *Client)},
+	"USD/HKD": { "USD/HKD", "USD/HKD_feed", 0, 7.7566, 7.829, 7.7493, make(map[*Client]bool) , make(chan *Client), make(chan *Client)},
+	"USD/INR": { "USD/INR", "USD/INR_feed", 0, 67.0958, 68.8808, 65.88 , make(map[*Client]bool), make(chan *Client), make(chan *Client)},
+	"USD/JPY": { "USD/JPY", "USD/JPY_feed", 0, 106.033, 121.676, 99.075, make(map[*Client]bool) , make(chan *Client), make(chan *Client)},
+	"USD/KRW": { "USD/KRW", "USD/KRW_feed", 0, 1134.52, 1244.1, 1122.87 , make(map[*Client]bool), make(chan *Client), make(chan *Client)},
+	"USD/MXN": { "USD/MXN", "USD/MXN_feed", 0, 18.5388, 19.5088, 17.0489 , make(map[*Client]bool), make(chan *Client), make(chan *Client)},
+	"USD/NOK": { "USD/NOK", "USD/NOK_feed", 0, 8.54192, 8.99242, 7.96395 , make(map[*Client]bool), make(chan *Client), make(chan *Client)},
+	"USD/PLN": { "USD/PLN", "USD/PLN_feed", 0, 3.9742, 4.1552, 3.7043, make(map[*Client]bool), make(chan *Client), make(chan *Client) },
+	"USD/RUB": { "USD/RUB", "USD/RUB_feed", 0, 64.745, 85.099, 62.791 , make(map[*Client]bool), make(chan *Client), make(chan *Client)},
+	"USD/SEK": { "USD/SEK", "USD/SEK_feed", 0, 8.64657, 8.74226, 7.89232 , make(map[*Client]bool), make(chan *Client), make(chan *Client)},
+	"USD/SGD": { "USD/SGD", "USD/SGD_feed", 0, 1.3579, 1.4443, 1.3311, make(map[*Client]bool) , make(chan *Client), make(chan *Client)},
 	"ACM": {"ACM", "ACM_feed", 0, 29.33, 35.86, 22.8, make(map[*Client]bool), make(chan *Client), make(chan *Client) },
 	"AKS": {"AKS", "AKS_feed", 0, 3.91, 6.18, 1.64, make(map[*Client]bool), make(chan *Client), make(chan *Client) },
 	"AMBR": {"AMBR", "AMBR_feed", 0, 5.99, 8.55, 3.42, make(map[*Client]bool), make(chan *Client), make(chan *Client) },
@@ -403,19 +377,6 @@ func main() {
 	}
 	http.HandleFunc("/", hello)
 	
-	onOpenShift := false
-    if ( onOpenShift) {
-		bind := fmt.Sprintf("%s:%s", os.Getenv("OPENSHIFT_GO_IP"), os.Getenv("OPENSHIFT_GO_PORT"))
-		fmt.Printf("listening on %s...", bind)
-		err := http.ListenAndServe(bind, nil)
-		if err != nil {
-			panic(err)
-		}
-	}
-	
-		
-
-
 	http.HandleFunc("/indi", func(w http.ResponseWriter, r *http.Request){
 		http.ServeFile(w, r, "index.html")
     })
