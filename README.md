@@ -8,3 +8,6 @@
 You can click and subscribe to multiple streams, each delivering a OHLC tick at a 100 millisecond interval. To unsubscribe to a feed, just click the Symbol agian </p>
 
 <p><mark>Note:</mark> Blue means you're subscribed to the feed. </p>
+
+<strong>Video of the platform:</strong><a href="https://vid.me/Ms3B#0m40s"  target="_blank">Video</a><br>
+<strong>Please note:</strong> The video is a very early build, what you see is a little over 1 week into development. 
