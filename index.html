@@ -23,6 +23,16 @@ ul.feeds li:hover{
   background: #1E90FF;
   color: white;
 }
+ul.feeds li.listening{
+  color:yellow;
+  background: #1E90FF;
+
+}
+ul.feeds li.listening:hover{
+  color:black;
+  background: white;
+  border-color:#1E90FF;
+}
 #centerPage{
   text-align: center;
 }
@@ -63,6 +73,12 @@ window.onload = function(){
 var nasdaq = [ 'OILD',
   'AEIS',
   'AMD',
+  'AAPL',
+  'YHOO',
+  'MSFT',
+  'SNE',
+  'GOOG',
+  'AMZN',
   'ALGN',
   'APEI',
   'ASML',
@@ -236,14 +252,16 @@ var currencies =  ["AUD/JPY",
   "USD/SEK",
   "USD/SGD",
   "USD/ZAR"]
-
-var money = document.getElementById('money').innerHTML = currencies.map(function(itm){
+var money = document.getElementById('money');
+var nas = document.getElementById('nas');
+var nyc = document.getElementById('nyc');
+money.innerHTML = currencies.map(function(itm){
   return ['<li data-what="',itm,'">', itm, '</li>'].join('')
 }).join('');
-var nas = document.getElementById('nas').innerHTML = nasdaq.map(function(itm){
+nas.innerHTML = nasdaq.map(function(itm){
   return ['<li data-what="',itm,'">', itm, '</li>'].join('')
 }).join('');
-document.getElementById('nyc').innerHTML = nyse.map(function(itm){
+nyc.innerHTML = nyse.map(function(itm){
   return ['<li data-what="',itm,'">', itm, '</li>'].join('')
 }).join('');
 if (window.location.protocol != "https:"){
@@ -251,19 +269,38 @@ var ws = new WebSocket("ws://"+location.hostname+":{{.port}}/ws");
 }else{
   var ws = new WebSocket("wss://"+location.hostname+"/ws");
 } 
+
+console.log('ws', ws)
+ws.on = {}
+const dispatchEvent = (function(ws){
+  return function(name, callback){
+    ws.on[name] = callback;
+  }
+})(ws)
 ws.onopen = function (event) {
  
 };
+
 document.getElementById('centerPage').onclick = function(e) {
   var symbol = e.target.dataset.what;
+  if(e.target.classList.contains("listening")){
+  symbol = "exit_" + symbol;
+   e.target.className = "";
+  }else{
+   e.target.className = "listening";
+  }
   if(symbol){
+    dispatchEvent(symbol, function(data){
+      console.log('symbol custom event', symbol)
+       console.log('in custom', data);
+    });
      console.log(symbol);
      ws.send(symbol);
   }
 }
 ws.onmessage = function (event) {
-
-  console.log(JSON.parse(event.data));
+  var theData = JSON.parse(event.data);
+  ws.on[theData.symb](theData)
 }
 
 

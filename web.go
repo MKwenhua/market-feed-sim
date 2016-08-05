@@ -6,29 +6,31 @@ import (
 	"os"
 	"fmt"
 	"time"
-	"math/rand"
-	"websocket"
+	"strings"
+	"github.com/gorilla/websocket"
+	"github.com/Pallinder/go-randomdata"
 )
 var upgrader = websocket.Upgrader{
 	CheckOrigin: func(r *http.Request) bool { return true },
 	ReadBufferSize:  1024,
 	WriteBufferSize: 1024,
 }
-type OHLC [4]float32
+type OHLC [4]float64
 
 //2016 Yearly High and Low of different currencies plus the index[0] is the "last" price
-type LastHighLow [3]float32
+type LastHighLow [3]float64
 
 
 //Case Class, for JSON object sent to clients
 type SeriesPoint struct {
-	MaxYear float32 `json:"maxyear"`
-	MinYear float32 `json:"minyear"`
+	MaxYear float64 `json:"maxyear"`
+	MinYear float64 `json:"minyear"`
 	Symbol  string `json:"symb"`
-	LastValue float32 `json:"lastVal"`
-   	MinValue float32 `json:"min"`
+	LastValue float64 `json:"lastVal"`
+   	MinValue float64 `json:"min"`
 	PointData OHLC `json:"data"`
 }
+//a client struct is created whenever a user connects
 type Client struct {
 	ws   *websocket.Conn
 	send chan SeriesPoint
@@ -39,13 +41,14 @@ type SymbolPush struct{
 	symbol string
 	feed string
 	clients int
-	highest float32
-	lowest float32
-	lastV float32
+	lastV float64
+	highest float64
+	lowest float64
 	sockets map[*Client]bool
 	addClient    chan *Client
 	removeClient chan *Client
 }
+//This starts a go routine, clients are added and removed via channels
 func (sb *SymbolPush) start() {
 	tick := time.Tick(1 *time.Second)
 	for {
@@ -55,7 +58,6 @@ func (sb *SymbolPush) start() {
 		case conn := <- sb.removeClient:
 			if _, ok := sb.sockets[conn]; ok {
 				delete(sb.sockets, conn)
-				close(conn.send)
 			}
 		case <-tick:
 			update := sb.GetPoint()
@@ -70,13 +72,13 @@ func (sb *SymbolPush) start() {
 }
 
 //caluclates a fake Tick Point using the last price and a range between the yearly Highest and Lowest
-func getOHLCpoint(sym string, open float32, highest float32, lowest float32) OHLC {
-    r1 := rand.New(rand.NewSource(time.Now().UnixNano()))
-    g := r1.Float32()
-    low := open - ((highest - lowest) * g )
-    high := open +  ((highest - lowest) * g )
-    clse := low + (r1.Float32() * (high - low ))
-   // fmt.Println( highest ," then ", lowest, " rand = ",  low, high, clse)
+func getOHLCpoint(sym string, open float64, highest float64, lowest float64) OHLC {
+    low := open/( 1 + randomdata.Decimal(1, 2)/100)
+    high := open * ( 1 + randomdata.Decimal(1, 2)/100)
+    clse := low + (high - low) * randomdata.Decimal(5,50)/50
+    if (clse >  highest) {
+  	  	clse = low 
+  	 }
 
     return OHLC{open, high, low, clse}
 }
@@ -277,6 +279,7 @@ var SymStreams = map[string]SymbolPush{
 	"CDL": {"CDL", "CDL_feed", 0, 35.18, 38.801, 31.55, make(map[*Client]bool), make(chan *Client), make(chan *Client) },
 	"FLAG": {"FLAG", "FLAG_feed", 0, 30.30, 33.861, 26.73, make(map[*Client]bool), make(chan *Client), make(chan *Client) },
 }
+
 type Hub struct {
 	clients      map[*Client]bool
 	broadcast    chan []byte
@@ -317,6 +320,7 @@ func (c *Client) write() {
 				c.ws.WriteMessage(websocket.CloseMessage, []byte{})
 				return
 			}
+		
 			c.ws.WriteJSON(message)
 
 		}
@@ -332,10 +336,16 @@ func (c *Client) read() {
 	for {
 		_, message, err := c.ws.ReadMessage()
 		str :=  string(message[:])
-		seriesPush := SymStreams[str]
-		seriesPush.addClient <- c
-		fmt.Println(str)
-		c.subs = append(c.subs, str)
+		if !strings.Contains(str, "exit_") {
+			seriesPush := SymStreams[str]
+			seriesPush.addClient <- c
+			fmt.Println(str)
+			c.subs = append(c.subs, str)
+		}else {
+			seriesPush :=  SymStreams[strings.SplitAfter(str, "_")[1]]
+			seriesPush.removeClient <- c
+			fmt.Println(str)
+		}
 		if err != nil {
 			hub.removeClient <- c
 			for i := 0; i < len(c.subs); i++ {
