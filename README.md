@@ -9,5 +9,5 @@ You can click and subscribe to multiple streams, each delivering a OHLC tick at 
 
 <p><mark>Note:</mark> Blue means you're subscribed to the feed. </p>
 
-<strong>Video of the platform:</strong><a href="https://youtu.be/xP4Hb1RZgNY"  target="_blank">Video</a><br>
+<strong>Video of the platform:</strong><a href="https://youtu.be/lE2TMC8UwGQ"  target="_blank">Video</a><br>
 <strong>Please note:</strong> The video is a very early build, what you see is a little over 1 week into development. 
